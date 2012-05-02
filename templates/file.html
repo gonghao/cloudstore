@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}编辑文件信息{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>编辑文件信息</h1>
+    <form class="form-horizontal" action="{{ url_for('edit_file', file_id=file.id, referrer=request.referrer) }}" method="post">
+        <div class="control-group">
+            <label class="control-label" for="filename">文件名</label>
+            <div class="controls">
+                <input type="text" id="filename" name="filename" value="{{ file.name }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">设置为私有文件</label>
+            <div class="controls">
+                <label class="radio inline">
+                    <input type="radio" name="private" value="1"{{ ' checked' if file.is_private else '' }}>
+                    是
+                </label>
+                <label class="radio inline">
+                    <input type="radio" name="private" value="0"{{ ' checked' if not file.is_private else '' }}>
+                    否
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">选择文件夹</label>
+            <div class="controls">
+                <select name="folderid">
+                    <option value="0"{{ ' selected' if not file.folderid else '' }}>不放入文件夹</option>
+                    {% for folder in folders %}
+                    <option value="{{ folder.id }}"{{ ' selected' if file.folderid == folder.id else '' }}>{{ folder.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <button type="reset" class="btn" onclick="history.back()">取消</button>
+        </div>
+    </form>
+</section>
+{% endblock content %}

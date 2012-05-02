@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}上传文件{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>上传文件</h1>
+    <form class="form-horizontal" action="{{ url_for('upload_file', to_folder=to_folder) }}" method="post" enctype="multipart/form-data">
+        <div class="control-group">
+            <label class="control-label" for="filename">文件名</label>
+            <div class="controls">
+                <input type="file" name="filename" id="filename">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">设置为私有文件</label>
+            <div class="controls">
+                <label class="radio inline">
+                    <input type="radio" name="private" value="1" checked>
+                    是
+                </label>
+                <label class="radio inline">
+                    <input type="radio" name="private" value="0">
+                    否
+                </label>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">上传</button>
+        </div>
+    </form>
+</section>
+{% endblock content %}

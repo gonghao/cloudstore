@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}创建用户组{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>创建用户组</h1>
+    <form class="form-horizontal" action="{{ url_for('admin_group_add') }}" method="post">
+        <div class="control-group{{ ' error' if errors and errors.groupname else '' }}">
+            <label class="control-label" for="groupname">用户组名称</label>
+            <div class="controls">
+                <input type="text" class="input-large" id="groupname" name="groupname">
+                {% if errors and errors.groupname %}
+                <p class="help-block">{{ errors.groupname[0] }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if users|length > 0 %}
+        <div class="control-group">
+            <label class="control-label" for="members">成员选择</label>
+            <div class="controls">
+                <select multiple id="members" name="members">
+                    {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        {% endif %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">创建</button>
+        </div>
+    </form>
+</section>
+{% endblock content %}

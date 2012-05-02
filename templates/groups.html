@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}用户组管理{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>用户组管理</h1>
+    {% if groups|length >0 %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>编号</th>
+                <th>名称</th>
+                <th>成员</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr><td colspan="4"><a href="{{ url_for('admin_group_add') }}">新增一个用户组</a></td></tr>
+        </tfoot>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td>{{ group.id }}</td>
+                <td>{{ group.name }}</td>
+                <td>
+                    {% if group.members|length > 0 %}
+                    <ul>
+                        {% for member in group.members %}
+                        <li>{{ member.name }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    暂时没有成员
+                    {% endif %}
+                </td>
+                <th>
+                    <a href="{{ url_for('admin_group', group_id=group.id) }}">详情</a>
+                </th>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    暂时还没有小组，<a href="{{ url_for('admin_group_add') }}">现在就添加一个？</a>
+    {% endif %}
+</section>
+{% endblock content %}

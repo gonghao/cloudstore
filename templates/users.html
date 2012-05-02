@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}用户管理{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>用户管理</h1>
+    {% if users|count > 0 %}
+    <form action="{{ url_for('admin_users') }}" method="post">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>用户名</th>
+                    <th>用户组</th>
+                    <th>组管理员</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ groups[user.groupid].name if user.groupid else '还未加入任何用户组' }}</td>
+                    <td>
+                        {% if user.groupid %}
+                        <label class="radio inline">
+                            <input type="radio"{{ ' checked' if user.is_admin else '' }} name="{{ user.id }}:is_admin" value="1">
+                            是
+                        </label>
+                        <label class="radio inline">
+                            <input type="radio"{{ ' checked' if not user.is_admin else '' }} name="{{ user.id }}:is_admin" value="0">
+                            否
+                        </label>
+                        {% else %}
+                        &nbsp;-&nbsp;
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存修改</button>
+        </div>
+    </form>
+    {% else %}
+    暂无其他用户
+    {% endif %}
+</section>
+{% endblock content %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ '文件夹列表' if not type else '添加文件到文件夹' }}{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>{{ '文件夹列表' if not type else '请选择文件夹' }}</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>文件夹ID</th>
+                <th>文件夹名称</th>
+                <th>所有者</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set user = session['user'] %}
+            {% if folders|length > 0 %}
+                {% for folder in folders %}
+            <tr>
+                <td>{{ folder.id }}</td>
+                <td>{{ folder.name }}</td>
+                <td>{{ user.name if not users else users[folder.userid].name }}</td>
+                <td>
+                    {% if type and type == 'addto' %}
+                    <a href="{{ url_for('add_file_to_folder', file_id=file_id, folder_id=folder.id) }}">添加到该文件夹</a>
+                    {% endif %}
+                    <a href="{{ url_for('list_folder_files', folder_id=folder.id) }}">详情</a>
+                </td>
+            </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="4">
+                    暂无文件夹
+                    {% if user.id != 1 %}，现在就<a href="{{ url_for('add_folder', next=request.path) }}">添加一个？</a>{% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+        {% if folders|length > 0 and user.id != 1 %}
+        <tfoot>
+            <tr>
+                <td colspan="4"><a href="{{ url_for('add_folder', next=request.path) }}">新建文件夹</a></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+</section>
+{% endblock content %}

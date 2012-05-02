@@ -13,9 +13,10 @@ DROP TABLE IF EXISTS `cloudstore`.`Group` ;
 
 CREATE  TABLE IF NOT EXISTS `cloudstore`.`Group` (
   `groupid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `goupname` VARCHAR(20) NOT NULL ,
+  `groupname` VARCHAR(20) NOT NULL ,
   PRIMARY KEY (`groupid`) ,
-  UNIQUE INDEX `groupid_UNIQUE` (`groupid` ASC) )
+  UNIQUE INDEX `groupid_UNIQUE` (`groupid` ASC) ,
+  UNIQUE INDEX `goupname_UNIQUE` (`groupname` ASC) )
 ENGINE = InnoDB;
 
 
@@ -28,10 +29,11 @@ CREATE  TABLE IF NOT EXISTS `cloudstore`.`User` (
   `userid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `username` VARCHAR(20) NOT NULL ,
   `password` VARCHAR(32) NOT NULL ,
-  `groupid` INT UNSIGNED NOT NULL ,
+  `groupid` INT UNSIGNED NULL ,
   `identity` VARCHAR(1) NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`userid`) ,
   UNIQUE INDEX `userid_UNIQUE` (`userid` ASC) ,
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) ,
   INDEX `groupid` (`groupid` ASC) ,
   CONSTRAINT `groupid`
     FOREIGN KEY (`groupid` )
@@ -42,15 +44,22 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `cloudstore`.`Directory`
+-- Table `cloudstore`.`Folder`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `cloudstore`.`Directory` ;
+DROP TABLE IF EXISTS `cloudstore`.`Folder` ;
 
-CREATE  TABLE IF NOT EXISTS `cloudstore`.`Directory` (
-  `directoryid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `directoryname` VARCHAR(20) NOT NULL ,
-  PRIMARY KEY (`directoryid`) ,
-  UNIQUE INDEX `directoryid_UNIQUE` (`directoryid` ASC) )
+CREATE  TABLE IF NOT EXISTS `cloudstore`.`Folder` (
+  `folderid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `foldername` VARCHAR(20) NOT NULL ,
+  `userid` INT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`folderid`) ,
+  UNIQUE INDEX `directoryid_UNIQUE` (`folderid` ASC) ,
+  INDEX `userid_folder` (`userid` ASC) ,
+  CONSTRAINT `userid_folder`
+    FOREIGN KEY (`userid` )
+    REFERENCES `cloudstore`.`User` (`userid` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -61,27 +70,28 @@ DROP TABLE IF EXISTS `cloudstore`.`File` ;
 
 CREATE  TABLE IF NOT EXISTS `cloudstore`.`File` (
   `fileid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `filename` VARCHAR(20) NOT NULL ,
+  `filename` VARCHAR(200) NOT NULL ,
   `userid` INT UNSIGNED NOT NULL ,
   `fileident` VARCHAR(1) NOT NULL DEFAULT 1 ,
-  `update` TIMESTAMP NULL ,
-  `modify` TIMESTAMP NULL ,
-  `count` INT UNSIGNED NOT NULL ,
-  `location` VARCHAR(100) NOT NULL ,
-  `type` VARCHAR(20) NOT NULL ,
-  `directoryid` INT UNSIGNED NOT NULL ,
+  `upload` INT NOT NULL DEFAULT 0 ,
+  `modify` INT NOT NULL DEFAULT 0 ,
+  `count` INT UNSIGNED NOT NULL DEFAULT 0 ,
+  `location` VARCHAR(200) NULL ,
+  `type` VARCHAR(40) NOT NULL ,
+  `folderid` INT UNSIGNED NULL ,
   PRIMARY KEY (`fileid`) ,
   UNIQUE INDEX `fileid_UNIQUE` (`fileid` ASC) ,
   INDEX `userid` (`userid` ASC) ,
-  INDEX `directoryid` (`directoryid` ASC) ,
+  INDEX `folderid` (`folderid` ASC) ,
+  UNIQUE INDEX `location_UNIQUE` (`location` ASC) ,
   CONSTRAINT `userid`
     FOREIGN KEY (`userid` )
     REFERENCES `cloudstore`.`User` (`userid` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `directoryid`
-    FOREIGN KEY (`directoryid` )
-    REFERENCES `cloudstore`.`Directory` (`directoryid` )
+  CONSTRAINT `folderid`
+    FOREIGN KEY (`folderid` )
+    REFERENCES `cloudstore`.`Folder` (`folderid` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

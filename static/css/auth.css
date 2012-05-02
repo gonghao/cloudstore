@@ -1,0 +1,11 @@
+.login-box,
+.register-box {
+    width: 500px;
+    margin: 100px auto;
+}
+
+.login-box .form-title,
+.register-box .form-title {
+    text-align: center;
+    padding-bottom: 20px;
+}

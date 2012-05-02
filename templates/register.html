@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}注册{% endblock title %}
+
+{% block page_style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock page_style %}
+
+{% block content %}
+<section class="register-box">
+    <h1 class="form-title">注册</h1>
+    <form class="form-horizontal" action="{{ url_for('register') }}" method="post">
+        <div class="control-group{{ ' error' if errors and errors.username else '' }}">
+            <label class="control-label" for="username">用户名</label>
+            <div class="controls">
+                <input type="text" class="input-large" id="username" name="username">
+                {% if errors and errors.username %}
+                <p class="help-block">{{ errors.username[0] }}</p>
+                {% else %}
+                <p class="help-block"><a href="{{ url_for('login') }}">已经注册过？</a></p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="control-group{{ ' error' if errors and errors.password else '' }}">
+            <label class="control-label" for="password">密码</label>
+            <div class="controls">
+                <input type="password" class="input-large" id="password" name="password">
+                {% if errors and errors.password %}
+                <p class="help-block">{{ errors.password[0] }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="control-group{{ ' error' if errors and errors.re_password else '' }}">
+            <label class="control-label" for="re-password">确认密码</label>
+            <div class="controls">
+                <input type="password" class="input-large" id="re-password" name="re_password">
+                {% if errors and errors.re_password %}
+                <p class="help-block">{{ errors.re_password[0] }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">注册</button>
+        </div>
+    </form>
+</section>
+{% endblock content %}

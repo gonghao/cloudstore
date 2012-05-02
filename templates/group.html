@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ group.name }}用户组详情{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>{{ group.name }}用户组详情</h1>
+    <dl class="dl-horizontal">
+        <dt>用户组ID</dt>
+        <dd>{{ group.id }}</dd>
+        <dt>用户组名称</dt>
+        <dd>{{ group.name }}</dd>
+        <dt>用户组成员</dt>
+        <dd>
+            <form action="{{ url_for('admin_group', group_id=group.id) }}" method="post">
+                <div class="control-group">
+                    <div class="controls">
+                        <select name="members" multiple>
+                            {% for user in group.members %}
+                            <option value="{{ user.id }}" selected>{{ user.name }}</option>
+                            {% endfor %}
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="help-block">请选择需要加入用户组的用户</p>
+                        <input type="hidden" name="all_user_ids" value="{{ ids }}">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </dd>
+    </dl>
+</section>
+{% endblock content %}

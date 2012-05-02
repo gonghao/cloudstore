@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}创建文件夹{% endblock title %}
+
+{% block content %}
+<section class="container">
+    <h1>创建文件夹</h1>
+    <form class="form-horizontal" action="{{ url_for('add_folder', next=next_page) }}" method="post">
+        <div class="control-group{{ ' error' if errors and errors.foldername else '' }}">
+            <label class="control-label" for="foldername">文件夹名称</label>
+            <div class="controls">
+                <input type="text" class="input-large" id="foldername" name="foldername">
+                {% if errors and errors.foldername %}
+                <p class="help-block">{{ errors.foldername[0] }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">创建</button>
+        </div>
+    </form>
+</section>
+{% endblock content %}

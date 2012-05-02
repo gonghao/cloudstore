@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}登录{% endblock title %}
+
+{% block page_style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock page_style %}
+
+{% block content %}
+<section class="login-box">
+    <h1 class="form-title">登录</h1>
+    <form class="form-horizontal" action="{{ url_for('login') }}" method="post">
+        <div class="control-group{{ ' error' if error else '' }}">
+            <label class="control-label" for="username">用户名</label>
+            <div class="controls">
+                <input type="text" class="input-large" id="username" name="username">
+                {% if not error %}
+                <p class="help-block"><a href="{{ url_for('register') }}">还未注册过？</a></p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="control-group{{ ' error' if error else '' }}">
+            <label class="control-label" for="password">密码</label>
+            <div class="controls">
+                <input type="password" class="input-large" id="password" name="password">
+                {% if error %}
+                <p class="help-block">{{ error }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">登录</button>
+        </div>
+    </form>
+</section>
+{% endblock content %}
