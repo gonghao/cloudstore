@@ -155,7 +155,7 @@ FILE_BASE = os.sep.join([app.config.root_path, UPLOAD_DIR, ''])
 @app.route('/file/upload', methods=['GET', 'POST'])
 @login_required()
 def upload_file():
-    to_folder = request.args.get('to_folder')
+    to_folder = request.args.get('to_folder', '')
 
     if re.search('^\d+$', to_folder) is None:
         to_folder = None
@@ -166,7 +166,9 @@ def upload_file():
     if request.method == 'POST':
         user = session['user']
         f = files.upload_file(FILE_BASE, request, user.id)
-        files.add_file_to_folder(f.id, to_folder, user.id)
+
+        if to_folder:
+            files.add_file_to_folder(f.id, to_folder, user.id)
 
         return redirect(url_for('list_file') if to_folder is None else url_for('list_folder_files', folder_id=to_folder))
 

@@ -55,9 +55,7 @@
             <tr>
                 <td colspan="10">
                     暂无任何文件
-                    {% if user.id != 1 %}
-                    ，<a href="{{ url_for('upload_file', to_folder=folder.id if folder else None) }}">上传一个？</a>
-                    {% endif %}
+                    ，<a href="{{ url_for('upload_file', to_folder=folder.id if folder and user.id != 1 else None) }}">上传一个？</a>
                 </td>
             </tr>
             {% endif %}

@@ -126,7 +126,8 @@ def upload_file(path, request, user_id):
     db.query(sql)
     db.commit()
 
-    f.save('%s%s' % (path, ff.location))
+    path = '%s%s' % (path, ff.location)
+    f.save(path)
 
     return ff
 
