@@ -15,6 +15,24 @@
                 {% endif %}
             </div>
         </div>
+        <div class="control-group{{ ' error' if errors and errors.password else '' }}">
+            <label class="control-label" for="password">用户组密码</label>
+            <div class="controls">
+                <input type="password" class="input-large" id="password" name="password">
+                {% if errors and errors.password %}
+                <p class="help-block">{{ errors.password[0] }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="control-group{{ ' error' if errors and errors.re_password else '' }}">
+            <label class="control-label" for="re-password">确认密码</label>
+            <div class="controls">
+                <input type="password" class="input-large" id="re-password" name="re_password">
+                {% if errors and errors.re_password %}
+                <p class="help-block">{{ errors.re_password[0] }}</p>
+                {% endif %}
+            </div>
+        </div>
         {% if users|length > 0 %}
         <div class="control-group">
             <label class="control-label" for="members">成员选择</label>

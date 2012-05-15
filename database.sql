@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS `cloudstore`.`Group` ;
 CREATE  TABLE IF NOT EXISTS `cloudstore`.`Group` (
   `groupid` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `groupname` VARCHAR(20) NOT NULL ,
+  `grouppassword` VARCHAR(32) NOT NULL ,
   PRIMARY KEY (`groupid`) ,
   UNIQUE INDEX `groupid_UNIQUE` (`groupid` ASC) ,
   UNIQUE INDEX `goupname_UNIQUE` (`groupname` ASC) )

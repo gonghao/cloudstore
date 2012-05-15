@@ -20,6 +20,15 @@ class AddGroupForm(Form):
     groupname = TextField('groupname', [
         validators.Length(min=4, max=20, message=u'用户组名长度必须介于%(min)d与%(max)d之间')
     ])
+    password = PasswordField('password', [
+        validators.Required(message=u'必填，不能为空'),
+        validators.Length(min=6, message=u'密码最少需要%(min)d位'),
+        validators.EqualTo('re_password', message=u'两次密码输入必须保持一致')
+    ])
+    re_password = PasswordField('re_password', [
+        validators.Required(message=u'必填，不能为空'),
+        validators.Length(min=6, message=u'密码最少需要%(min)d位'),
+    ])
 
 class User(object):
     def __init__(self, user_dict):
@@ -77,18 +86,41 @@ def register(form):
 def login(form):
     db = g.db
 
-    db.query(
-        '''
-        SELECT * FROM %s WHERE username = '%s' and password = '%s'
-        '''
-        % ('User', form['username'].strip(), md5(form['password']).hexdigest())
-    )
+    name = form['name'].strip()
+    password = md5(form['password']).hexdigest()
+    login_type = form['type']
 
-    data = db.store_result()
+    # try to login with user
+    if login_type == 'user':
 
-    if data.num_rows() > 0:
-        user = data.fetch_row(how=1)[0]
-        return User(user)
+        db.query(
+            '''
+            SELECT * FROM `User` WHERE username = '%s' and password = '%s'
+            '''
+            % (name, password)
+        )
+
+        data = db.store_result()
+
+        if data.num_rows() > 0:
+            user = data.fetch_row(how=1)[0]
+            return User(user)
+
+    # try to login with group
+    elif login_type == 'group':
+
+        db.query(
+            '''
+            SELECT * FROM `Group` WHERE `groupname` = "%s" and `grouppassword` = "%s"
+            '''
+            % (name, password)
+        )
+
+        data = db.store_result()
+
+        if data.num_rows() > 0:
+            group = data.fetch_row(how=1)[0]
+            return Group(group)
 
 def set_users_admin(form):
     db = g.db
@@ -141,6 +173,15 @@ def get_users_not_in_group():
     db = g.db
 
     db.query( 'SELECT * FROM `User` WHERE groupid IS NULL AND userid != 1' )
+
+    datas = db.store_result()
+
+    return [ User(data) for data in datas.fetch_row(maxrows=0, how=1) ]
+
+def get_users_in_the_group(groupid):
+    db = g.db
+
+    db.query( 'SELECT * FROM `User` WHERE `groupid` = "%s"' % groupid )
 
     datas = db.store_result()
 
@@ -200,7 +241,7 @@ def add_group(form):
                 'groupname': [ u'用户组名已经存在' ]
             }
 
-        db.query( 'INSERT INTO `Group` (groupname) VALUES ("%s")' % name )
+        db.query( 'INSERT INTO `Group` (`groupname`, `grouppassword`) VALUES ("%s", "%s")' % (name, md5(form.data['password']).hexdigest()) )
 
         db.commit()
 

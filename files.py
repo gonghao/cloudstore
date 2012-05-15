@@ -66,6 +66,35 @@ def get_files_by_folder(folder_id):
 
     return [File(f) for f in data.fetch_row(maxrows=0, how=1)]
 
+def get_files_by_group(group_id):
+    db = g.db
+
+    sql = ( '''
+        SELECT `File`.* FROM `File`, `User` WHERE `User`.`groupid` = "%s"
+        AND `User`.`userid` = `File`.`userid` AND `File`.`fileident` = 0
+        ''' % group_id)
+
+    db.query(sql)
+
+    data = db.store_result()
+
+    return [File(f) for f in data.fetch_row(maxrows=0, how=1)]
+
+def get_user_shared_files(user_id):
+    db = g.db
+
+    sql = ( '''
+        SELECT `File`.* FROM `User`, `File`, `Group`
+        WHERE `Group`.`groupid` = `User`.`groupid` AND `User`.`userid` = `File`.`userid` AND `File`.`fileident` = 0
+        AND `User`.`groupid` IN (SELECT `groupid` FROM `User` WHERE `userid` = "%s")
+        ''' % user_id)
+
+    db.query(sql)
+
+    data = db.store_result()
+
+    return [File(f) for f in data.fetch_row(maxrows=0, how=1)]
+
 def get_folders(user_id=None):
     db = g.db
 
@@ -131,13 +160,22 @@ def upload_file(path, request, user_id):
 
     return ff
 
-def download_file(file_id, user):
+def download_file(file_id, user_id=None, group_id=None):
     db = g.db
 
     sql = 'SELECT * FROM `File` WHERE `fileid` = "%s"' % file_id
 
-    if user.id != 1:
-        sql += ' AND `userid` = "%s"' % user.id
+    if user_id and user_id != 1:
+        sql += ' AND `userid` = "%s"' % user_id
+
+    if group_id:
+        sql = (
+            '''
+            SELECT `File`.* FROM `File`, `User` WHERE `File`.`fileid` = "%s"
+            AND `File`.`userid` = `User`.`userid` AND `User`.`groupid` = "%s"
+            '''
+            % ( file_id, group_id )
+        )
 
     db.query(sql)
     data = db.store_result()

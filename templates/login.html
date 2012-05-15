@@ -10,12 +10,21 @@
 <section class="login-box">
     <h1 class="form-title">登录</h1>
     <form class="form-horizontal" action="{{ url_for('login') }}" method="post">
-        <div class="control-group{{ ' error' if error else '' }}">
-            <label class="control-label" for="username">用户名</label>
+        <div class="control-group">
+            <label class="control-label" for="login-type">登陆类型</label>
             <div class="controls">
-                <input type="text" class="input-large" id="username" name="username">
-                {% if not error %}
-                <p class="help-block"><a href="{{ url_for('register') }}">还未注册过？</a></p>
+                <select id="login-type" name="type"{{ ' disabled' if login_to_group else '' }}>
+                    <option value="user"{{ ' selected' if not login_to_group else '' }}>用户</option>
+                    <option value="group"{{ ' selected' if login_to_group else '' }}>用户组</option>
+                </select>
+            </div>
+        </div>
+        <div class="control-group{{ ' error' if error else '' }}">
+            <label class="control-label" for="name">用户名</label>
+            <div class="controls">
+                <input type="text" class="input-large" id="name" name="name">
+                {% if error %}
+                <p class="help-block">{{ error }}</p>
                 {% endif %}
             </div>
         </div>
@@ -23,8 +32,8 @@
             <label class="control-label" for="password">密码</label>
             <div class="controls">
                 <input type="password" class="input-large" id="password" name="password">
-                {% if error %}
-                <p class="help-block">{{ error }}</p>
+                {% if not error %}
+                <p class="help-block"><a href="{{ url_for('register') }}">还未注册过？</a></p>
                 {% endif %}
             </div>
         </div>
@@ -33,4 +42,31 @@
         </div>
     </form>
 </section>
+<script>
+(function() {
+    var select = document.getElementById('login-type'),
+        labels = document.getElementsByTagName('label'),
+        label,
+        nameLabel,
+        labelText = { 'user': '用户名', 'group': '用户组名' };
+
+    for (var i = 0, l = labels.length; i < l; i++) {
+        label = labels[i];
+        if (label.getAttribute('for') === 'name') {
+            nameLabel = label;
+            break;
+        }
+    }
+
+    if (nameLabel) {
+        select.onchange = function() {
+            var text = labelText[this.value];
+            if (text) {
+                nameLabel.innerHTML = text;
+            }
+        };
+    }
+
+})();
+</script>
 {% endblock content %}

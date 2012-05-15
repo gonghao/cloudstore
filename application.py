@@ -37,25 +37,31 @@ def before_request():
 @app.route('/')
 @login_required()
 def index():
-    return render_template('index.html')
+    return render_template('index.html', type='user' if 'user' in session else 'group')
 
 @app.route('/login', methods=[ 'GET', 'POST' ])
 def login():
     if request.method == 'GET':
-        if 'user' in session:
+        login_to_group = request.args.get('login_to_group', '') == '1'
+
+        if 'user' in session or 'group' in session:
             return redirect(url_for('index'))
 
-        return render_template('login.html')
+        return render_template('login.html', login_to_group=login_to_group)
 
     if request.method == 'POST':
         user = auth.login(request.form)
 
-        if (isinstance(user, auth.User)):
+        success = False
+        if isinstance(user, auth.User):
+            success = True
             session['user'] = user
 
-            return redirect(request.args.get('next', '/'))
+        elif isinstance(user, auth.Group):
+            success = True
+            session['group'] = user
 
-        return render_template('login.html', error=u'用户名或密码错误，请重试')
+        return redirect(request.args.get('next', '/')) if success else render_template('login.html', error=u'用户(用户组)名或密码错误，请重试')
 
 @app.route('/register', methods=[ 'GET', 'POST' ])
 def register():
@@ -72,8 +78,8 @@ def register():
 
 @app.route('/logout')
 def logout():
-    if 'user' in session:
-        session.pop('user', None)
+    session.pop('user', None)
+    session.pop('group', None)
 
     return redirect(url_for('login'))
 
@@ -150,18 +156,43 @@ def list_file():
 
     return render_template('files.html', files=fs, users=users, user=user, folders=folders)
 
+@app.route('/file/share')
+@login_required()
+def list_share_file():
+    user = session['user']
+
+    if user.id == 1:
+        abort(404)
+
+    fs = files.get_user_shared_files(user.id)
+    users = auth.get_users_dict()
+
+    return render_template('files.html', files=fs, users=users, user=user, share_view=True)
+
+@app.route('/group/files')
+@login_required(only_group=True)
+def list_group_files():
+    group = session['group']
+
+    fs = files.get_files_by_group(group.id)
+    folders = files.get_folders_dict()
+    users = auth.get_users_in_the_group(group.id)
+
+    return render_template('files.html', files=fs, users=dict([[user.id, user] for user in users]), folders=folders, group_view=True)
+
 FILE_BASE = os.sep.join([app.config.root_path, UPLOAD_DIR, ''])
 
 @app.route('/file/upload', methods=['GET', 'POST'])
 @login_required()
 def upload_file():
     to_folder = request.args.get('to_folder', '')
+    set_public_default = request.args.get('public_default', '') == '1'
 
     if re.search('^\d+$', to_folder) is None:
         to_folder = None
 
     if request.method == 'GET':
-        return render_template('upload.html', to_folder=to_folder)
+        return render_template('upload.html', to_folder=to_folder, set_public_default=set_public_default)
 
     if request.method == 'POST':
         user = session['user']
@@ -197,9 +228,15 @@ def edit_file(file_id):
 @app.route('/file/<int:file_id>/download')
 @login_required()
 def download_file(file_id):
-    user = session['user']
+    user = None
+    group = None
 
-    ff = files.download_file(file_id, user)
+    if 'user' in session:
+        user = session['user']
+    elif 'group' in session:
+        group = session['group']
+
+    ff = files.download_file(file_id, user_id=user.id if user else None, group_id=group.id if group else None)
 
     if ff:
         return send_file('%s%s' % (FILE_BASE, ff.location), mimetype=ff.type, as_attachment=True, attachment_filename=ff.name)
@@ -228,7 +265,7 @@ def add_folder():
 
         return redirect(next)
 
-@app.route('/file/<int:file_id>/addto/folder', defaults={'folder_id': 0})
+@app.route('/file/<int:file_id>/addto/folder', defaults={ 'folder_id': 0 })
 @app.route('/file/<int:file_id>/addto/folder/<int:folder_id>')
 @login_required()
 def add_file_to_folder(file_id, folder_id):

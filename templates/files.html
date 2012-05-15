@@ -12,10 +12,12 @@
                 <th>文件名</th>
                 <th>文件类型</th>
                 <th>文件所有者</th>
+                {% if not group_view %}
                 <th>是否私有</th>
+                {% endif %}
                 <th>上传时间</th>
                 <th>修改时间</th>
-                {% if not folder %}
+                {% if not folder and not group_view and folders %}
                 <th>所属文件夹</th>
                 {% endif %}
                 <th>下载次数</th>
@@ -30,23 +32,27 @@
                 <td>{{ file.name }}</td>
                 <td>{{ file.type }}</td>
                 <td>{{ user.name if not users else users[file.userid].name }}</td>
+                {% if not group_view %}
                 <td>{{ '是' if file.is_private else '否' }}</td>
+                {% endif %}
                 <td>{{ file.upload_datetime|datetimeformat }}</td>
                 <td>{{ file.modify_datetime|datetimeformat }}</td>
-                {% if not folder %}
+                {% if not folder and not group_view and folders %}
                 <td>
                     {% if folders and file.folderid %}
                         {% with folder = folders[file.folderid] %}
                     <a href="{{ url_for('list_folder_files', folder_id=folder.id) }}">{{ folder.name }}</a>
                         {% endwith %}
                     {% else %}
-                    暂无归属文件夹{% if user.id != 1 %}，<a href="{{ url_for('add_file_to_folder', file_id=file.id) }}">添加到文件夹？</a>{% endif %}
+                    暂无归属文件夹{% if not user or user.id != 1 %}，<a href="{{ url_for('add_file_to_folder', file_id=file.id) }}">添加到文件夹？</a>{% endif %}
                     {% endif %}
                 </td>
                 {% endif %}
                 <td>{{ file.count }}</d>
                 <td>
+                    {% if not group_view and user and file.userid == user.id %}
                     <a href="{{ url_for('edit_file', file_id=file.id) }}">编辑</a>
+                    {% endif %}
                     <a href="{{ url_for('download_file', file_id=file.id) }}">下载</a>
                 </td>
             </tr>
@@ -55,12 +61,14 @@
             <tr>
                 <td colspan="10">
                     暂无任何文件
+                    {% if not group_view %}
                     ，<a href="{{ url_for('upload_file', to_folder=folder.id if folder and user.id != 1 else None) }}">上传一个？</a>
+                    {% endif %}
                 </td>
             </tr>
             {% endif %}
         </tbody>
-        {% if files and files|length > 0 and user.id != 1 %}
+        {% if files and files|length > 0 and (not user or user.id != 1) and not group_view %}
         <tfoot>
             <tr>
                 <td colspan="10"><a href="{{ url_for('upload_file', to_folder=folder.id if folder else None) }}">上传新文件</a></td>

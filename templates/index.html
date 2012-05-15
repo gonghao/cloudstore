@@ -3,20 +3,29 @@
 {% block title %}首页{% endblock title %}
 
 {% block content %}
-{% set user = session['user'] %}
+{% if type == 'user' %}
+    {% set user = session['user'] %}
+{% else %}
+    {% set group = session['group'] %}
+{% endif %}
 <section class="container">
-    <h1>Hello {{ user.name }}, This is Index Page</h1>
+    <h1>Hello {{ user.name if user else '%s 组成员' % group.name }}, This is Index Page</h1>
 
     <ul class="action-list">
-        {% if user.id == 1 %}
+        {% if user %}
+            {% if user.id == 1 %}
         <li><a href="{{ url_for('admin_users') }}">用户管理</a></li>
         <li><a href="{{ url_for('admin_groups') }}">用户组管理</a></li>
-        {% endif %}
-        {% if user.id != 1 and user.is_admin %}
+            {% endif %}
+            {% if user.id != 1 and user.is_admin %}
         <li><a href="{{ url_for('admin_group', group_id=user.groupid) }}">用户组管理</a></li>
-        {% endif %}
-        <li><a href="{{ url_for('list_file') }}">文件列表</a></li>
+            {% endif %}
+        <li><a href="{{ url_for('list_file') }}">个人文件列表</a></li>
+        <li><a href="{{ url_for('list_share_file') }}">共享文件列表</a></li>
         <li><a href="{{ url_for('list_folder') }}">文件夹列表</a></li>
+        {% else %}
+        <li><a href="{{ url_for('list_group_files') }}">组内文件列表</a></li>
+        {% endif %}
     </ul>
 
     <a href="{{ url_for('logout') }}">退出</a>

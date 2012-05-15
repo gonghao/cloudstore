@@ -16,11 +16,11 @@
             <label class="control-label">设置为私有文件</label>
             <div class="controls">
                 <label class="radio inline">
-                    <input type="radio" name="private" value="1" checked>
+                    <input type="radio" name="private" value="1"{{ ' checked' if not set_public_default else '' }}>
                     是
                 </label>
                 <label class="radio inline">
-                    <input type="radio" name="private" value="0">
+                    <input type="radio" name="private" value="0"{{ ' checked' if set_public_default else '' }}>
                     否
                 </label>
             </div>
