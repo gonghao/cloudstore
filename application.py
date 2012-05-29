@@ -311,34 +311,48 @@ def list_folder_files(folder_id):
 @app.route('/file/search')
 @login_required()
 def search_files():
-    if 'user' not in session:
-        abort(404)
-
     query = request.args.get('q', None)
     if query is None:
         return redirect(request.referrer)
 
-    is_own_file = request.args.get('is_own_file', '1') == '1'
-    user = session['user']
+    user = None
+    group_view = False
 
-    users = None
-    if user.id == 1:
-        # shared files are not enabled for superuser
+    if 'user' in session:
+
+        is_own_file = request.args.get('is_own_file', '1') == '1'
+        user = session['user']
+
+        users = None
+        if user.id == 1:
+            # shared files are not enabled for superuser
+            if is_own_file is False:
+                abort(404)
+
+            users = auth.get_users_dict()
+
+        folders = None
         if is_own_file is False:
-            abort(404)
+            users = auth.get_users_dict()
+        elif user.id != 1:
+            folders = files.get_folders_dict()
 
-        users = auth.get_users_dict()
+        fs = files.get_files([user.id] if user.id != 1 else None) if is_own_file else files.get_user_shared_files(user.id)
 
-    folders = None
-    if is_own_file is False:
-        users = auth.get_users_dict()
-    elif user.id != 1:
+
+    # group view
+    else:
+
+        group = session['group']
+        group_view = True
+
+        fs = files.get_files_by_group(group.id)
         folders = files.get_folders_dict()
+        users = auth.get_users_in_the_group(group.id)
+        users = dict([[user.id, user] for user in users])
 
-    fs = files.get_files([user.id] if user.id != 1 else None) if is_own_file else files.get_user_shared_files(user.id)
     fs = [ f for f in fs if f.name.find(query) >= 0 ]
-
-    return render_template('files.html', files=fs, users=users, user=user, folders=folders, search_view=True, query=query)
+    return render_template('files.html', files=fs, users=users, user=user, folders=folders, group_view=group_view, search_view=True, query=query)
 
 @app.route('/folder/search')
 @login_required()
