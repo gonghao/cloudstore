@@ -20,9 +20,14 @@
             {% if user.id != 1 and user.is_admin %}
         <li><a href="{{ url_for('admin_group', group_id=user.groupid) }}">用户组管理</a></li>
             {% endif %}
+            {% if user.id != 1 %}
         <li><a href="{{ url_for('list_file') }}">个人文件列表</a></li>
         <li><a href="{{ url_for('list_share_file') }}">共享文件列表</a></li>
         <li><a href="{{ url_for('list_folder') }}">文件夹列表</a></li>
+            {% else %}
+        <li><a href="{{ url_for('list_file') }}">全站文件列表</a></li>
+        <li><a href="{{ url_for('list_folder') }}">全站文件夹列表</a></li>
+            {% endif %}
         {% else %}
         <li><a href="{{ url_for('list_group_files') }}">组内文件列表</a></li>
         {% endif %}

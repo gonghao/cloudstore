@@ -1,10 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ '文件夹列表' if not type else '添加文件到文件夹' }}{% endblock title %}
+{% block title %}
+    {% if not search_view %}
+{{ '文件夹列表' if not type else '添加文件到文件夹' }}
+    {% else %}
+搜索“{{ query }}”相关文件夹列表
+    {% endif %}
+{% endblock title %}
 
 {% block content %}
 <section class="container">
-    <h1>{{ '文件夹列表' if not type else '请选择文件夹' }}</h1>
+    {% if not search_view and not type %}
+    <h1 class="with-search-box">文件夹列表</h1>
+    <form class="form-search with-title" method="GET" action="{{ url_for('search_folders') }}">
+        <input type="text" class="input-medium search-query" name="q">
+        <button type="submit" class="btn">搜索</button>
+    </form>
+    {% else %}
+    <h1>{{ '搜索“%s”相关文件夹列表' % query if search_view else '请选择文件夹' }}</h1>
+    {% endif %}
     <table class="table table-striped">
         <thead>
             <tr>
@@ -33,8 +47,12 @@
             {% else %}
             <tr>
                 <td colspan="4">
-                    暂无文件夹
-                    {% if user.id != 1 %}，现在就<a href="{{ url_for('add_folder', next=request.path) }}">添加一个？</a>{% endif %}
+                    {% if not search_view %}
+                        暂无文件夹
+                        {% if user.id != 1 %}，现在就<a href="{{ url_for('add_folder', next=request.path) }}">添加一个？</a>{% endif %}
+                    {% else %}
+                    没有找到“{{ query }}”相关文件夹
+                    {% endif %}
                 </td>
             </tr>
             {% endif %}

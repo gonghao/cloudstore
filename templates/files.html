@@ -1,10 +1,25 @@
 {% extends 'base.html' %}
 
-{% block title %}文件列表{{ ' - %s' % folder.name if folder else '' }}{% endblock title %}
+{% block title %}
+    {% if not search_view %}
+文件列表{{ ' - %s' % folder.name if folder else '' }}
+    {% else %}
+搜索“{{ query }}”相关文件列表
+    {% endif %}
+{% endblock title %}
 
 {% block content %}
 <section class="container">
-    <h1>文件列表{% if folder %}&nbsp;-&nbsp;{{ folder.name }}{% endif %}</h1>
+    {% if not search_view %}
+    <h1 class="with-search-box">文件列表{% if folder %}&nbsp;-&nbsp;{{ folder.name }}{% endif %}</h1>
+    <form class="form-search with-title" method="GET" action="{{ url_for('search_files') }}">
+        <input type="text" class="input-medium search-query" name="q">
+        <input type="hidden" name="is_own_file" value="{{ '1' if not share_view else '0' }}">
+        <button type="submit" class="btn">搜索</button>
+    </form>
+    {% else %}
+    <h1>搜索“{{ query }}”相关文件列表</h1>
+    {% endif %}
     <table class="table table-striped">
         <thead>
             <tr>
@@ -60,9 +75,13 @@
             {% else %}
             <tr>
                 <td colspan="10">
-                    暂无任何文件
-                    {% if not group_view %}
-                    ，<a href="{{ url_for('upload_file', to_folder=folder.id if folder and user.id != 1 else None) }}">上传一个？</a>
+                    {% if not search_view %}
+                        暂无任何文件
+                        {% if not group_view %}
+                        ，<a href="{{ url_for('upload_file', to_folder=folder.id if folder and user.id != 1 else None) }}">上传一个？</a>
+                        {% endif %}
+                    {% else %}
+                    没有找到“{{ query }}”相关文件
                     {% endif %}
                 </td>
             </tr>
@@ -71,7 +90,7 @@
         {% if files and files|length > 0 and (not user or user.id != 1) and not group_view %}
         <tfoot>
             <tr>
-                <td colspan="10"><a href="{{ url_for('upload_file', to_folder=folder.id if folder else None) }}">上传新文件</a></td>
+                <td colspan="10"><a href="{{ url_for('upload_file', to_folder=folder.id if folder else None, public_default=1 if share_view else None) }}">上传新文件</a></td>
             </tr>
         </tfoot>
         {% endif %}

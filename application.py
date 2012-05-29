@@ -308,5 +308,54 @@ def list_folder_files(folder_id):
 
     return render_template('files.html', files=fs, users=users, user=user, folder=folder)
 
+@app.route('/file/search')
+@login_required()
+def search_files():
+    if 'user' not in session:
+        abort(404)
+
+    query = request.args.get('q', None)
+    if query is None:
+        return redirect(request.referrer)
+
+    is_own_file = request.args.get('is_own_file', '1') == '1'
+    user = session['user']
+
+    users = None
+    if user.id == 1:
+        # shared files are not enabled for superuser
+        if is_own_file is False:
+            abort(404)
+
+        users = auth.get_users_dict()
+
+    folders = None
+    if is_own_file is False:
+        users = auth.get_users_dict()
+    elif user.id != 1:
+        folders = files.get_folders_dict()
+
+    fs = files.get_files([user.id] if user.id != 1 else None) if is_own_file else files.get_user_shared_files(user.id)
+    fs = [ f for f in fs if f.name.find(query) >= 0 ]
+
+    return render_template('files.html', files=fs, users=users, user=user, folders=folders, search_view=True, query=query)
+
+@app.route('/folder/search')
+@login_required()
+def search_folders():
+    if 'user' not in session:
+        abort(404)
+
+    query = request.args.get('q', None)
+    if query is None:
+        return redirect(request.referrer)
+
+    user = session['user']
+
+    folders = files.get_folders(user.id if user.id != 1 else None)
+    folders = [ f for f in folders if f.name.find(query) >= 0 ]
+
+    return render_template('folders.html', folders=folders, search_view=True, query=query)
+
 if __name__ == '__main__':
     app.run()
