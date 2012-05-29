@@ -122,7 +122,7 @@ def get_folder_by_id(folder_id):
 
     return Folder(**data.fetch_row(how=1)[0])
 
-FILE_NAME = '{userid}_{fileid}_{filename}'
+FILE_NAME = '{userid}_{fileid}'
 
 def upload_file(path, request, user_id):
     db = g.db
@@ -148,7 +148,7 @@ def upload_file(path, request, user_id):
     db.query(sql)
     data = db.store_result()
     ff = File(data.fetch_row(how=1)[0])
-    ff.location = FILE_NAME.format(userid=user_id, fileid=ff.id, filename=ff.name)
+    ff.location = FILE_NAME.format(userid=user_id, fileid=ff.id)
 
     sql = 'UPDATE `File` SET `location`="%s" WHERE `fileid` = "%d"' % (ff.location, ff.id)
 
