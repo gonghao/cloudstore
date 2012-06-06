@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from time import time
 from flask import g
 from wtforms import Form, TextField, validators
@@ -161,6 +162,9 @@ def upload_file(path, request, user_id):
     return ff
 
 def download_file(file_id, user_id=None, group_id=None):
+    if user_id is None and group_id is None:
+        return None
+
     db = g.db
 
     sql = 'SELECT * FROM `File` WHERE `fileid` = "%s"' % file_id
@@ -210,6 +214,43 @@ def edit_file(file_id, form):
         return None
 
     return form.errors
+
+def delete_file(path, file_id, user_id=None, group_id=None):
+    if user_id is None and group_id is None:
+        return None
+
+    db = g.db
+
+    sql = 'SELECT * FROM `File` WHERE `fileid` = "%s"' % file_id
+
+    if user_id and user_id != 1:
+        sql += ' AND `userid` = "%s"' % user_id
+
+    if group_id:
+        sql = (
+            '''
+            SELECT `File`.* FROM `File`, `User` WHERE `File`.`fileid` = "%s"
+            AND `File`.`userid` = `User`.`userid` AND `User`.`groupid` = "%s"
+            '''
+            % ( file_id, group_id )
+        )
+
+    db.query(sql)
+    data = db.store_result()
+
+    if data.num_rows() > 0:
+        data = data.fetch_row(how=1)[0]
+        ff = File(data)
+
+        sql = 'DELETE FROM `File` WHERE `fileid` = "%s"' % file_id
+        db.query(sql)
+        db.commit()
+
+        os.remove(path + ff.location)
+
+        return None
+
+    return 'File not exist'
 
 def add_folder(form, user_id):
     form = AddFolderForm(form)

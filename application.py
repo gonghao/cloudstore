@@ -243,6 +243,28 @@ def download_file(file_id):
 
     abort(404)
 
+@app.route('/file/<int:file_id>/delete')
+@login_required()
+def delete_file(file_id):
+    user = None
+    group = None
+
+    if 'user' in session:
+        user = session['user']
+    elif 'group' in session:
+        group = session['group']
+
+    try:
+        result = files.delete_file(FILE_BASE, file_id, user_id=user.id if user else None, group_id=group.id if group else None)
+    except Exception, e:
+        app.logger.error(e)
+        result = None
+
+    if result is not None:
+        abort(404)
+
+    return redirect(request.referrer)
+
 @app.route('/folder/add', methods=['GET', 'POST'])
 @login_required()
 def add_folder():
